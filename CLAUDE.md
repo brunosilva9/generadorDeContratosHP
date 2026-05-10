@@ -71,6 +71,12 @@ There is no `.docx → PDF` conversion in JS. Two paths produce a PDF:
 
 Vitest runs in node (no DOM needed for the lib functions tested). Tests live next to source as `*.test.js`. The `docx.js` tests build a minimal in-memory `.docx` (just a JSZip with `word/document.xml`) — no fixture files. The trickiest case to keep covered is the **run-split placeholder** (`<w:r><w:t>&lt;Foo</w:t></w:r><w:r><w:t>Bar&gt;</w:t></w:r>` → field name `FooBar`), since that's the regression risk if anyone simplifies the substitution loop.
 
+## Deploy (GitHub Pages)
+
+[.github/workflows/deploy.yml](.github/workflows/deploy.yml) auto-deploys on push to `master` (lint → test → build → upload `dist/` → deploy). The Vite `base` is set to `/generadorDeContratosHP/` for production builds in [vite.config.js](vite.config.js); dev mode uses `/`. If the repo is renamed, update the `REPO` constant there.
+
+One-time setup in GitHub repo: **Settings → Pages → Build and deployment → Source: GitHub Actions**. The first push after enabling triggers the workflow; subsequent pushes update the site at `https://brunosilva9.github.io/generadorDeContratosHP/`.
+
 ## Origin
 
 This web app replaces an older Excel VBA macro that drove Word via COM to do the same substitution. The legacy macros used real `<Field>` text replacement (Word's Find/Replace handled run-splitting natively), which is why the web port had to do the manual `&lt;...&gt;` scan with run-tag stripping.
