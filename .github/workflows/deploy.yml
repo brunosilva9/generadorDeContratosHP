@@ -32,10 +32,6 @@ jobs:
       - run: npm test
 
       - run: npm run build
-        env:
-          # Set this as a repository variable: Settings → Variables → Actions.
-          # Empty = frontend uses the in-browser PDF fallback.
-          VITE_PDF_API_URL: ${{ vars.VITE_PDF_API_URL }}
 
       - uses: actions/configure-pages@v5
 

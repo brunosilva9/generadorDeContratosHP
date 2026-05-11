@@ -56,14 +56,12 @@ If a matched field name has no corresponding column in the row, the original sub
 
 ### PDF strategy
 
-`buildCombinedPdf` in [pdf.js](src/lib/pdf.js) dispatches between two paths based on whether `VITE_PDF_API_URL` is set at build time:
+There is no `.docx → PDF` conversion in JS. Two paths produce a PDF:
 
-1. **Server-side via Gotenberg/LibreOffice** (when `VITE_PDF_API_URL` is set) — POSTs all `.docx` files (expanded by copies, filenames `0000.docx`, `0001.docx`… so merge order matches our explicit order) to `${VITE_PDF_API_URL}/forms/libreoffice/convert` with `merge=true`. Gotenberg returns a single combined PDF, rendered by real LibreOffice. Full Word fidelity — line shapes, multi-column sections, tab leaders, everything. This is the **recommended** production path. See [server/](server/) for the container + Cloud Run deploy.
-2. **In-browser fallback** (when `VITE_PDF_API_URL` is empty) — renders every result off-screen via `docx-preview`, captures each page with `html2canvas`, and writes JPEGs into a `jsPDF` document. **Rasterized** (no searchable text) and lossy on column layouts and DrawingML shapes (see [render-transform.js](src/lib/render-transform.js) for partial workarounds). Kept so the app still works without a backend.
+1. **Programmatic, separate download** — when the user clicks "Descargar PDF", `buildCombinedPdf` ([pdf.js](src/lib/pdf.js)) renders every result off-screen via `docx-preview`, captures each page with `html2canvas`, and writes JPEGs into a `jsPDF` document. The PDF is **rasterized** (no searchable text) but preserves visual layout. Copies are duplicated by re-using captured page images, not re-rendering.
+2. **Browser-mediated** — [PrintView.jsx](src/components/PrintView.jsx) renders all docs (expanded by copies) in a full-screen overlay with `page-break-after: always`. The user clicks "Imprimir" and chooses "Guardar como PDF" in the browser dialog. Better fidelity, requires user interaction. The `@media print` rules in [src/index.css](src/index.css) hide everything tagged `.no-print`.
 
-There's also [PrintView.jsx](src/components/PrintView.jsx) as a third option: renders all docs in a full-screen overlay with `page-break-after: always` and the user invokes the browser's print dialog ("Guardar como PDF"). It always uses docx-preview (no server call) since browser print is inherently client-side.
-
-`docx-preview`, `html2canvas`, `jspdf`, and `xlsx` are all dynamic-imported so they don't bloat the initial bundle. When using the API path, `html2canvas`/`jspdf` chunks aren't even fetched.
+`docx-preview`, `html2canvas`, `jspdf`, and `xlsx` are all dynamic-imported so they don't bloat the initial bundle.
 
 ## Known issues (TODO)
 
