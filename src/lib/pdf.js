@@ -170,7 +170,49 @@ function paginateCanvas(canvas) {
   return out;
 }
 
+// Dispatches to the LibreOffice/Gotenberg path when VITE_PDF_API_URL is set
+// (full-fidelity PDF, server-side), otherwise falls back to the in-browser
+// html2canvas pipeline (lossy on column layouts and DrawingML shapes).
 export async function buildCombinedPdf(uniqueResults, onProgress) {
+  const apiUrl = import.meta.env.VITE_PDF_API_URL;
+  if (apiUrl) {
+    return buildCombinedPdfViaApi(uniqueResults, apiUrl, onProgress);
+  }
+  return buildCombinedPdfInBrowser(uniqueResults, onProgress);
+}
+
+async function buildCombinedPdfViaApi(uniqueResults, apiUrl, onProgress) {
+  // Expand by copies. Gotenberg merges files in alphabetical filename order,
+  // so we pad indices with zeros to preserve our explicit order.
+  const expanded = [];
+  for (const r of uniqueResults) {
+    const copies = Math.max(1, r.copies ?? 1);
+    for (let c = 0; c < copies; c++) expanded.push(r);
+  }
+  const pad = String(expanded.length).length;
+  const total = expanded.length;
+
+  onProgress?.({ done: 0, total });
+
+  const form = new FormData();
+  expanded.forEach((r, i) => {
+    const idx = String(i).padStart(pad, '0');
+    form.append('files', new Blob([r.buffer]), `${idx}.docx`);
+  });
+  form.append('merge', 'true');
+
+  const endpoint = apiUrl.replace(/\/+$/, '') + '/forms/libreoffice/convert';
+  const res = await fetch(endpoint, { method: 'POST', body: form });
+  if (!res.ok) {
+    const detail = await res.text().catch(() => '');
+    throw new Error(`PDF API ${res.status}: ${detail.slice(0, 200) || res.statusText}`);
+  }
+
+  onProgress?.({ done: total, total });
+  return res.blob();
+}
+
+async function buildCombinedPdfInBrowser(uniqueResults, onProgress) {
   const [{ renderAsync }, { default: html2canvas }, { jsPDF }] = await Promise.all([
     import('docx-preview'),
     import('html2canvas'),
