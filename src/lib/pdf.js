@@ -170,7 +170,23 @@ function paginateCanvas(canvas) {
   return out;
 }
 
+// Default PDF builder: high-fidelity LibreOffice-WASM conversion (PDF matches
+// Word), falling back to the docx-preview raster path when the browser can't
+// run the WASM engine or the conversion fails.
 export async function buildCombinedPdf(uniqueResults, onProgress) {
+  try {
+    const { buildCombinedPdfLibreOffice, isLibreOfficeSupported } =
+      await import('./pdf-libreoffice');
+    if (isLibreOfficeSupported()) {
+      return await buildCombinedPdfLibreOffice(uniqueResults, onProgress);
+    }
+  } catch (err) {
+    console.warn('LibreOffice WASM no disponible, usando render por imagen:', err);
+  }
+  return buildCombinedPdfRaster(uniqueResults, onProgress);
+}
+
+export async function buildCombinedPdfRaster(uniqueResults, onProgress) {
   const [{ renderAsync }, { default: html2canvas }, { jsPDF }] = await Promise.all([
     import('docx-preview'),
     import('html2canvas'),

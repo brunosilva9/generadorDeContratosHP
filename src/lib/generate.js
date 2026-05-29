@@ -54,6 +54,10 @@ export async function generateAll({ rows, headers, templates, copies, autoEmail,
         copies: count,
         rowLabel,
         templateName: template.name,
+        // Carried so the LibreOffice PDF path can re-fill at a smaller scale to
+        // keep the PDF within the template's page count (see pdf-libreoffice.js).
+        template,
+        row,
       });
 
       done++;

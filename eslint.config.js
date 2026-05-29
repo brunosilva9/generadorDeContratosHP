@@ -5,7 +5,13 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist', '.vite']),
+  globalIgnores([
+    'dist',
+    '.vite',
+    // Vendored ZetaOffice/zetajs runtime — third-party, not ours to lint.
+    'public/libreoffice/zeta.js',
+    'public/libreoffice/zetaHelper.js',
+  ]),
   {
     files: ['**/*.{js,jsx}'],
     extends: [
