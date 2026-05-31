@@ -1,16 +1,31 @@
-# React + Vite
+# Generador de Contratos
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+App web 100% client-side que genera contratos `.docx` a partir de una planilla Excel y una o más plantillas Word. Sin instalación, sin Word, sin backend — todo corre en el navegador.
 
-Currently, two official plugins are available:
+**Sitio en vivo:** https://brunosilva9.github.io/generadorDeContratosHP/
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Qué hace
 
-## React Compiler
+1. Subís un Excel con los datos (un encabezado por columna) y N plantillas `.docx` con marcadores tipo `<Nombre>`, `<RUT>`, etc.
+2. Editás los datos en el preview y configurás cuántas copias generar de cada plantilla por persona.
+3. Descargás:
+   - **ZIP** — `{persona}/{plantilla}.docx`, un archivo por (fila × plantilla), para archivo digital.
+   - **PDF** — cada (fila × plantilla) repetido `copias` veces, para imprimir.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## PDF con fidelidad de Word
 
-## Expanding the ESLint configuration
+El PDF se genera con **LibreOffice compilado a WebAssembly** ([ZetaOffice](https://zetaoffice.net/)) corriendo dentro del navegador, así sale igual que Word — líneas de firma, columnas, tabuladores, todo. La primera generación descarga ~300 MB del runtime desde el CDN de ZetaOffice y queda cacheado. Si el navegador no lo soporta, cae automáticamente a un render alternativo (menos fiel).
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Los datos nunca salen del navegador.
+
+## Desarrollo
+
+```bash
+npm install
+npm run dev      # Vite + HMR
+npm test         # vitest
+npm run lint
+npm run build    # bundle a dist/
+```
+
+UI en español. Despliegue automático a GitHub Pages en cada push a `master`. Detalles de arquitectura en [CLAUDE.md](CLAUDE.md).

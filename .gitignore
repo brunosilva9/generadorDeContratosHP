@@ -24,7 +24,6 @@ dist-ssr
 *.sw?
 
 Docs
-Contratos
 
 # Local Claude Code config
 .claude/
@@ -46,6 +45,3 @@ vite.config.ts.timestamp-*
 !.yarn/sdks
 !.yarn/versions
 
-# Debug artifacts (extracted .docx/.xlsx for inspection)
-temp_*/
-GENERADO.*
