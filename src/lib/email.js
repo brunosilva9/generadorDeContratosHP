@@ -1,4 +1,4 @@
-export const EMAIL_FIELD = 'EMAILTRABAJADOR';
+export const EMAIL_FIELD = 'EMAILT';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
